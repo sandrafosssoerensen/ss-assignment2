@@ -5,6 +5,10 @@ import struct
 
 from covert_common import encrypt_payload, icmp_checksum
 
+# https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol 
+# From above source ICMP type 47 falls in the 44-252 unassigned/reserved range, which is the type that 
+# the task specifies to use as the reserved number to use for the covert channel
+# in this task this is used to create covert channels, known as ICMP tunnels
 ICMP_TYPE_RESERVED = 47
 
 def parse_args():
@@ -40,7 +44,14 @@ def main():
 
             encrypted = encrypt_payload(args.key, plaintext)
             
-            # Build ICMP header with checksum field set to 0
+            # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
+            # ICMP header layout:
+            #   Byte 0      - Type  (8 bits)
+            #   Byte 1      - Code  (8 bits, 0 for unassigned types)
+            #   Bytes 2-3   - Checksum (16 bits, 0 while computing)
+            #   Bytes 4-5   - Identifier (16 bits, used to match replies)
+            #   Bytes 6-7   - Sequence number (16 bits)
+            # Checksum covers the entire ICMP message (header + data), with checksum field set to 0.
             header = struct.pack("!BBHHH", ICMP_TYPE_RESERVED, 0, 0, identifier, sequence)
             
             # Calculate correct checksum

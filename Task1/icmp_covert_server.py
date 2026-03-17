@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 
 from covert_common import decrypt_payload
 
+# Same notes as in icmp_covert_client.py
 ICMP_TYPE_RESERVED = 47
 
 def parse_args():
@@ -33,8 +34,12 @@ def main():
 
             if len(packet) < 8:
                 continue
-
-            # Include the IPv4 header before ICMP
+            
+            # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
+            # From above source: ICMP is encapsulated in an IPv4 packet; ICMP header starts after IPv4 header
+            # IPv4 header length is stored in the low nibble of byte 0, in units of 32-bit words
+            # Shift right 4 to get IP version
+            # AND with 0x0F to get IHL
             if (packet[0] >> 4) == 4 and len(packet) >= 20:
                 ip_header_len = (packet[0] & 0x0F) * 4
                 if len(packet) < ip_header_len + 8:
@@ -43,7 +48,10 @@ def main():
             else:
                 icmp_offset = 0
 
-            payload = packet[icmp_offset + 8 :]
+            # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
+            # From above source: ICMP header is always 8 bytes
+            # Everything after those 8 bytes is our encrypted payload
+            payload = packet[icmp_offset + 8:]
             plaintext = decrypt_payload(args.key, payload)
     
             timestamp = datetime.now(timezone.utc).isoformat()
