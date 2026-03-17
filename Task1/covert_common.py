@@ -25,8 +25,6 @@ def encrypt_payload(psk, plaintext):
 
 def decrypt_payload(psk, encrypted):
     # Decrypts AES-GCM encrypted payload and returns plaintext or None if invalid. 
-    if len(encrypted) < 28:
-        return None
     nonce = encrypted[-12:]
     ciphertext = encrypted[:-12]
     key = derive_key(psk)

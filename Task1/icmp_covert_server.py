@@ -49,11 +49,16 @@ def main():
                 icmp_offset = 0
 
             # https://en.wikipedia.org/wiki/Internet_Control_Message_Protocol
+            # From above source: byte 0 of the ICMP header is the Type field.
+            # Filter to only process type 47 packets; discard all others.
+            if packet[icmp_offset] != ICMP_TYPE_RESERVED:
+                continue
+
             # From above source: ICMP header is always 8 bytes
             # Everything after those 8 bytes is our encrypted payload
             payload = packet[icmp_offset + 8:]
             plaintext = decrypt_payload(args.key, payload)
-    
+
             timestamp = datetime.now(timezone.utc).isoformat()
             text = plaintext.decode("utf-8", errors="replace")
             print(f"[{timestamp}] from {addr[0]}: {text}")

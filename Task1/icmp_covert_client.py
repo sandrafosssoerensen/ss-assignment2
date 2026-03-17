@@ -17,7 +17,6 @@ def parse_args():
     )
     parser.add_argument("dest_ip", help="Destination IPv4 address")
     parser.add_argument("--key", required=True, help="Pre-shared secret")
-    parser.add_argument("--max-bytes", type=int, default=1024, help="Max plaintext bytes (default: 1024)")
     return parser.parse_args()
 
 def main():
